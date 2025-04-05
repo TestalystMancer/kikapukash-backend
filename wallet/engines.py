@@ -1,18 +1,15 @@
-# withdrawal/engines.py
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from decimal import Decimal
 
-from savings_group.models import SavingsGroupMember, Wallet
-from wallet.models import UserBalance
-
 class WithdrawalRuleEngine:
+    # Avoid circular import by using lazy imports within methods
     def __init__(self, user, group, amount):
         self.user = user
         self.group = group
         self.amount = Decimal(amount)
         self.rule = group.withdrawal_rule
-        self.user_balance = UserBalance.get_or_create_balance(user_id=user.id, group_id=group.id)
+        self.user_balance = self.UserBalance.get_or_create_balance(user_id=user.id, group_id=group.id)
 
     def validate(self):
         self._check_min_duration()
@@ -21,6 +18,8 @@ class WithdrawalRuleEngine:
         self._check_max_withdrawal_percentage()
 
     def _check_min_duration(self):
+        # Lazy import the SavingsGroupMember model here
+        from savings_group.models import SavingsGroupMember
         try:
             member = SavingsGroupMember.objects.get(user=self.user, savings_group=self.group)
         except SavingsGroupMember.DoesNotExist:
@@ -32,6 +31,8 @@ class WithdrawalRuleEngine:
 
     def _check_min_group_balance(self):
         if self.rule.min_balance_required:
+            # Lazy import Wallet here
+            from wallet.models import Wallet
             group_wallet = Wallet.objects.get(owner_type='savings_group', owner_id=self.group.id)
             projected_balance = group_wallet.balance - self.amount
             if projected_balance < self.rule.min_balance_required:
@@ -44,6 +45,8 @@ class WithdrawalRuleEngine:
 
     def _check_max_withdrawal_percentage(self):
         if self.rule.max_withdrawal_percentage:
+            # Lazy import Wallet here
+            from wallet.models import Wallet
             group_wallet = Wallet.objects.get(owner_type='savings_group', owner_id=self.group.id)
             max_allowed = (self.rule.max_withdrawal_percentage / 100) * group_wallet.balance
             if self.amount > max_allowed:

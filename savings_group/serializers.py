@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from savings_group.models import SavingsGroup,SavingsGroupMember
+from .models import SavingsGroup,SavingsGroupMember
 from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+
 
 class SavingsGroupMemberSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=get_user_model().objects.all())  
@@ -19,6 +20,7 @@ class SavingsGroupMemberSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return SavingsGroupMember.objects.create(**validated_data)
+
 
 class SavingsGroupSerializer(serializers.ModelSerializer):
     members = SavingsGroupMemberSerializer(many=True, read_only=True)

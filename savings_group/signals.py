@@ -23,10 +23,6 @@ def add_creator_as_member(sender, instance, created, **kwargs):
             is_admin=True
         )
 
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from .models import Transaction, Wallet, UserBalance
-
 @receiver(post_save, sender=Transaction)
 def update_wallet_and_user_balance(sender, instance, created, **kwargs):
     if not created:

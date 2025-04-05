@@ -131,7 +131,7 @@ class WithdrawalRule(TimeStampModel):
     )
 
     # For advanced custom rules stored as JSON (e.g., complex logic or time rules)
-    custom_rule_data = JSONField(
+    custom_rule_data = models.JSONField(  # Updated to use django.db.models.JSONField
         null=True, blank=True,
         help_text="Optional field for storing custom logic or conditions"
     )
@@ -145,7 +145,7 @@ class WithdrawalRule(TimeStampModel):
 
 
 class UserBalance(models.Model):
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     savings_group = models.ForeignKey('savings_group.SavingsGroup', on_delete=models.CASCADE)
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
