@@ -1,7 +1,9 @@
 from django.db import models
 from common.models import TimeStampModel
 from django.conf import settings
-
+from .engines import WithdrawalRuleEngine
+from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 class Wallet(TimeStampModel):
     OWNER_TYPES = (
@@ -44,6 +46,33 @@ class WithdrawalRequest(TimeStampModel):
     def __str__(self):
         return f"Request for {self.amount} - {self.status.capitalize()}"
     
+
+    def approve(self, approved_by):
+        from_wallet = self.requested_savings_group_wallet
+        to_wallet = self.requester_wallet
+
+        engine = WithdrawalRuleEngine(
+            user=self.requester_wallet.owner_id,  # assuming it's a user
+            group=self.requested_savings_group_wallet.owner_id,
+            amount=self.amount
+        )
+        
+        engine.validate()  # Raises ValidationError if any rule is violated
+
+        # If validation passed, create a transaction
+        Transaction.objects.create(
+            type='withdrawal',
+            amount=self.amount,
+            from_wallet=from_wallet,
+            to_wallet=to_wallet
+        )
+
+        self.status = 'approved'
+        self.approved_by = approved_by
+        self.approved_at = timezone.now()
+        self.save()
+
+        
 from django.db import models
 from django.contrib.postgres.fields import JSONField  # If using PostgreSQL
 from common.models import TimeStampModel
