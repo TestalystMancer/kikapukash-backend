@@ -2,43 +2,7 @@ from django.db import models
 from django.conf import settings
 from common.models import TimeStampModel
 from users.models import CustomUser
-# Savings Group Model
-class SavingsGroup(TimeStampModel):
-    group_name = models.CharField(max_length=100)
-    description = models.TextField()
-    target_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    
 
-    def __str__(self):
-        return self.group_name
-
-# Savings Group Membership (tracks users' roles in the group)
-class SavingsGroupMember(TimeStampModel):
-    ROLE_CHOICES = [
-        ('admin', 'Admin'),
-        ('member', 'Member'),
-    ]
-    savings_group = models.ForeignKey(SavingsGroup, on_delete=models.CASCADE)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='member')
-    joined_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user} - {self.role} in {self.savings_group.group_name}"
-
-# Wallet Model (used for both user and group wallets)
-class Wallet(TimeStampModel):
-    WALLET_OWNER_CHOICES = [
-        ('user', 'User'),
-        ('group', 'Group'),
-    ]
-    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    wallet_owner_type = models.CharField(max_length=5, choices=WALLET_OWNER_CHOICES)
-    wallet_owner_id = models.IntegerField()
-
-    def __str__(self):
-        return f"{self.wallet_owner_type.capitalize()} Wallet - {self.wallet_owner_id}"
 
 # Transaction Model (tracks deposits and withdrawals)
 class Transaction(TimeStampModel):
