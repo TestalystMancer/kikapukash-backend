@@ -18,7 +18,7 @@ class SavingsGroup(TimeStampModel):
 
 class SavingsGroupMember(TimeStampModel):
     SavingsGroup = models.ForeignKey(SavingsGroup, on_delete=models.CASCADE, related_name='members')
-    User = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name='group_memberships')
+    user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name='group_memberships')
     is_admin = models.BooleanField(default=False)
 
     def __str__(self):

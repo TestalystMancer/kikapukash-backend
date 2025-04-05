@@ -10,7 +10,7 @@ class SavingsGroupAdmin(admin.ModelAdmin):
 
 @admin.register(SavingsGroupMember)
 class SavingsGroupMemberAdmin(admin.ModelAdmin):
-    list_display = ('id','User', 'SavingsGroup', 'is_admin', 'created_at', 'updated_at')
+    list_display = ('id','user', 'SavingsGroup', 'is_admin', 'created_at', 'updated_at')
     list_filter = ('is_admin', 'SavingsGroup')
     search_fields = ('User__username', 'User__email',)
     ordering = ('-created_at',)
