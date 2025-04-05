@@ -54,7 +54,7 @@
 
 ---
 
-## 📊 Dashboard / Stats (Optional)
+## 📊 Dashboard / Stats 
 | Endpoint | Method | Description |
 |---------|--------|-------------|
 | `/api/dashboard/overview/` | `GET` | See user contributions, group participation, total saved |
