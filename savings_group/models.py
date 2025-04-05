@@ -12,3 +12,17 @@ class SavingsGroup(TimeStampModel):
         related_name='created_items'
     )
     
+    def get_savings_group_balance():
+        # calculate this by querying all the savings group members wallet
+        pass
+
+class SavingsGroupMember(TimeStampModel):
+    SavingsGroup = models.ForeignKey(SavingsGroup, on_delete=models.CASCADE, related_name='members')
+    User = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name='group_memberships')
+    is_admin = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.User} - {self.SavingsGroup.group_name} ({'Admin' if self.is_admin else 'Member'})"
+
+
+
