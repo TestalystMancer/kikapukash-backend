@@ -5,6 +5,12 @@ from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 
 class CustomUser(AbstractUser):
+    USER_ROLE_CHOICES = [
+        ('admin', 'Admin'),
+        ('member', 'member'),
+    ] 
+    user_role = models.CharField(max_length=10, choices=USER_ROLE_CHOICES, default='member')
+
     username = None
     email = models.EmailField(_("email address"), unique=True)
     first_name = models.CharField(_('First Name'), max_length=255)
