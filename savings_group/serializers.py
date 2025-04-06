@@ -27,7 +27,16 @@ class SavingsGroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SavingsGroup
-        fields = '__all__'
+        fields = [
+            'id',
+            'group_name',
+            'target_amount',
+            'description',
+            'created_by',
+            'created_at',
+            'updated_at',
+            'members',
+        ]
     
     def validate_group_name(self, value):
         if len(value) < 3:
