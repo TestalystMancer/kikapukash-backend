@@ -15,7 +15,7 @@ class WalletSerializer(serializers.ModelSerializer):
         model = Wallet
         fields = [
             'id', 'balance', 'owner_type', 'owner_id',
-            'owner_object',  # 👈 This is the full object
+            'owner_object',
             'created_at', 'updated_at'
         ]
         read_only_fields = ['balance', 'created_at', 'updated_at']
