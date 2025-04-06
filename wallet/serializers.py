@@ -50,3 +50,4 @@ class UserBalanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserBalance
         fields = ['id', 'user', 'savings_group', 'balance']
+/home/tajiri/Projects/KikapuKash/KikapuKash-Backend
