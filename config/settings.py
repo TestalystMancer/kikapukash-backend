@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'common',
     'savings_group',
     'wallet',
+    'notifications',
 
 
     # other installed apps

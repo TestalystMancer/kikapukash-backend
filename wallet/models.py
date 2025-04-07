@@ -27,7 +27,7 @@ class Transaction(TimeStampModel):
     to_wallet = models.ForeignKey(Wallet, related_name='to_wallet', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.type.capitalize()} of {self.amount} from {self.from_wallet.wallet_owner_type} to {self.to_wallet.wallet_owner_type}"
+        return f"{self.transaction_type.capitalize()} of {self.amount} from {self.from_wallet.owner_type} to {self.to_wallet.owner_type}"
 
 
 class WithdrawalRequest(TimeStampModel):
