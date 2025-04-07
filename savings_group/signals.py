@@ -19,7 +19,7 @@ def add_creator_as_member(sender, instance, created, **kwargs):
     if created:
         SavingsGroupMember.objects.create(
             SavingsGroup=instance,
-            User=instance.created_by,
+            user=instance.created_by,
             is_admin=True
         )
 
