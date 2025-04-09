@@ -9,6 +9,15 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)  # Whether the notification has been read
     created_at = models.DateTimeField(auto_now_add=True)  # Timestamp for when the notification was created
 
+
+    @classmethod
+    def get_or_create_notification(cls, user, message):
+        obj, created = cls.objects.get_or_create(
+            user_id=user,
+            message=message
+        )
+        return obj
+    
     def __str__(self):
         return f"Notification for {self.user} - {self.created_at}"
 
