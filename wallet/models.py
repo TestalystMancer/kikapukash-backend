@@ -17,17 +17,41 @@ class Wallet(TimeStampModel):
 
 
 class Transaction(TimeStampModel):
+    # Define available transaction types
     TRANSACTION_TYPE_CHOICES = [
         ('deposit', 'Deposit'),
         ('withdrawal', 'Withdrawal'),
+        ('transfer', 'Transfer'),
     ]
+
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPE_CHOICES)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    from_wallet = models.ForeignKey(Wallet, related_name='from_wallet', on_delete=models.CASCADE)
-    to_wallet = models.ForeignKey(Wallet, related_name='to_wallet', on_delete=models.CASCADE)
+    # Allow null and blank so that absence of a wallet can be handled gracefully
+    from_wallet = models.ForeignKey(
+        Wallet, related_name='from_wallet', on_delete=models.CASCADE, null=True, blank=True)
+    to_wallet = models.ForeignKey(
+        Wallet, related_name='to_wallet', on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
-        return f"{self.transaction_type.capitalize()} of {self.amount} from {self.from_wallet.owner_type} to {self.to_wallet.owner_type}"
+        # Use getattr with a default value to ensure that if owner_type is missing,
+        # we still have a meaningful description.
+        if self.from_wallet:
+            from_desc = getattr(self.from_wallet, 'owner_type', 'External Source')
+        else:
+            from_desc = "External Source"
+
+        if self.to_wallet:
+            to_desc = getattr(self.to_wallet, 'owner_type', 'External Destination')
+        else:
+            to_desc = "External Destination"
+
+        # Capitalize transaction type safely, with a fallback if it's not set.
+        tx_type = self.transaction_type.capitalize() if self.transaction_type else "Transaction"
+
+        # Return a formatted string. Note: For performance reasons in bulk queries,
+        # ensure you use select_related in your queries outside of this method.
+        return f"{tx_type} of {self.amount} from {from_desc} to {to_desc}"
+
 
 
 class WithdrawalRequest(TimeStampModel):

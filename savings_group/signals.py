@@ -1,9 +1,7 @@
-# your_app/signals/savings_group_signals.py
-
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import SavingsGroup, SavingsGroupMember
-from wallet.models import Wallet, Transaction,UserBalance
+from wallet.models import Wallet, Transaction, UserBalance
 
 @receiver(post_save, sender=SavingsGroup)
 def create_wallet_for_savings_group(sender, instance, created, **kwargs):
@@ -25,65 +23,77 @@ def add_creator_as_member(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=Transaction)
 def update_wallet_and_user_balance(sender, instance, created, **kwargs):
+    # Process only newly created transactions
     if not created:
         return
 
     amount = instance.amount
     transaction_type = instance.transaction_type
-    from_wallet = instance.from_wallet
-    to_wallet = instance.to_wallet
+    from_wallet = instance.from_wallet  # May be None; check later before access.
+    to_wallet = instance.to_wallet      # May be None; check later before access.
 
-    # Helper to update wallet balances
+    # Helper function to update the wallet's balance.
     def adjust_wallet_balance(wallet, delta):
-        wallet.balance += delta
-        wallet.save()
+        if wallet is not None:  # Safety check: ensure wallet exists.
+            wallet.balance += delta
+            wallet.save()
 
-    # Deposit flow
+    # DEPOSIT FLOW
     if transaction_type == 'deposit':
-        if to_wallet.owner_type == 'user':
-            # Incoming deposit to user's wallet (either from external or group)
+        # Ensure to_wallet is not None before checking its owner_type.
+        if to_wallet is not None and to_wallet.owner_type == 'user':
+            # Deposit into user's wallet (incoming funds).
             adjust_wallet_balance(to_wallet, amount)
 
-            # If from a group wallet → update group & user balance
-            if from_wallet.owner_type == 'savings_group':
+            # If funds come from a savings_group wallet, make sure from_wallet is valid.
+            if from_wallet is not None and from_wallet.owner_type == 'savings_group':
                 adjust_wallet_balance(from_wallet, -amount)
 
+                # Get or create the corresponding user balance and update it.
                 user_balance = UserBalance.get_or_create_balance(
                     user_id=to_wallet.owner_id,
                     group_id=from_wallet.owner_id
                 )
                 user_balance.update_balance(amount, 'deposit')
 
-        elif to_wallet.owner_type == 'savings_group':
-            # Deposit into group wallet (must come from user's wallet)
-            adjust_wallet_balance(to_wallet, amount)
-            adjust_wallet_balance(from_wallet, -amount)
+        elif to_wallet is not None and to_wallet.owner_type == 'savings_group':
+            # Deposit into a group wallet coming from a user's wallet.
+            if from_wallet is not None and from_wallet.owner_type == 'user':
+                adjust_wallet_balance(to_wallet, amount)
+                adjust_wallet_balance(from_wallet, -amount)
 
-            user_balance = UserBalance.get_or_create_balance(
-                user_id=from_wallet.owner_id,
-                group_id=to_wallet.owner_id
-            )
-            user_balance.update_balance(amount, 'deposit')
+                user_balance = UserBalance.get_or_create_balance(
+                    user_id=from_wallet.owner_id,
+                    group_id=to_wallet.owner_id
+                )
+                user_balance.update_balance(amount, 'deposit')
+            else:
+                # Optionally, log or handle unexpected missing from_wallet data here.
+                pass
 
-    # Withdrawal flow
+    # WITHDRAWAL FLOW
     elif transaction_type == 'withdrawal':
-        if from_wallet.owner_type == 'savings_group':
-            # Withdrawal from group to user's wallet
+        if from_wallet is not None and from_wallet.owner_type == 'savings_group':
+            # Withdrawal from a group's wallet to a user's wallet.
+            if to_wallet is not None and to_wallet.owner_type == 'user':
+                adjust_wallet_balance(from_wallet, -amount)
+                adjust_wallet_balance(to_wallet, amount)
+
+                user_balance = UserBalance.get_or_create_balance(
+                    user_id=to_wallet.owner_id,
+                    group_id=from_wallet.owner_id
+                )
+                user_balance.update_balance(amount, 'withdrawal')
+            else:
+                # Handle missing to_wallet or unexpected owner_type.
+                pass
+
+        elif from_wallet is not None and from_wallet.owner_type == 'user':
+            # Withdrawal from a user's wallet, e.g., moving funds externally.
             adjust_wallet_balance(from_wallet, -amount)
-            adjust_wallet_balance(to_wallet, amount)
 
-            user_balance = UserBalance.get_or_create_balance(
-                user_id=to_wallet.owner_id,
-                group_id=from_wallet.owner_id
-            )
-            user_balance.update_balance(amount, 'withdrawal')
-
-        elif from_wallet.owner_type == 'user':
-            # Withdrawal from user's wallet (e.g. to external)
-            adjust_wallet_balance(from_wallet, -amount)
-
-            # If it's going to a savings group → top up group wallet
-            if to_wallet.owner_type == 'savings_group':
+            # Check if the target wallet exists and is a savings_group wallet.
+            if to_wallet is not None and to_wallet.owner_type == 'savings_group':
                 adjust_wallet_balance(to_wallet, amount)
 
                 user_balance = UserBalance.get_or_create_balance(
@@ -91,3 +101,4 @@ def update_wallet_and_user_balance(sender, instance, created, **kwargs):
                     group_id=to_wallet.owner_id
                 )
                 user_balance.update_balance(amount, 'deposit')
+            # Otherwise, no further action if the funds go somewhere external.
