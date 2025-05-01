@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+from decouple import config
+import dj_database_url
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,7 +28,7 @@ SECRET_KEY = 'django-insecure-77!jmxxdxf+=0q7nl+m)+haag@2@p3p71eob#@q5ln7h7&wayd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["kikapukash-backend-production.up.railway.app"]
 
 
 # Application definition
@@ -88,7 +91,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000", 
-    "http://localhost:5173", 
+    "http://localhost:5173",
+    "https://kikapukash-fronted.vercel.app/" 
 ]
 
 
@@ -116,24 +120,36 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-if DEBUG:
-   DATABASES = {
-       'default': {
-           'ENGINE': 'django.db.backends.sqlite3',
-           'NAME': BASE_DIR / 'db.sqlite3',
-       }
-   }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'kikapu_kash_db',
-            'USER': 'kikapu_admin',
-            'PASSWORD': 'Admin@1234',
-            'HOST': 'localhost',
-            'PORT': '5432',
-        }
-    }
+# if DEBUG:
+#    DATABASES = {
+#        'default': {
+#            'ENGINE': 'django.db.backends.sqlite3',
+#            'NAME': BASE_DIR / 'db.sqlite3',
+#        }
+#    }
+# else:
+    # DATABASES = {
+    #     'default': {
+    #         'ENGINE': 'django.db.backends.postgresql',
+    #         'NAME': 'kikapu_kash_db',
+    #         'USER': 'kikapu_admin',
+    #         'PASSWORD': 'Admin@1234',
+    #         'HOST': 'localhost',
+    #         'PORT': '5432',
+
+            
+    #     }
+    # }
+
+DATABASES = {
+
+    'default': dj_database_url.config(
+
+        default=config("DATABASE_PUBLIC_URL")
+
+    )
+
+}
 
 
 # Password validation
