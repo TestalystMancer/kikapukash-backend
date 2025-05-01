@@ -101,6 +101,11 @@ CORS_ALLOWED_ORIGINS = [
     "https://kikapukash-fronted.vercel.app" 
 ]
 
+CSRF_TRUSTED_ORIGINS = ["https://kikapukash-backend-production.up.railway.app",
+                        "https://kikapukash-fronted.vercel.app"
+]
+
+
 
 ROOT_URLCONF = 'config.urls'
 
