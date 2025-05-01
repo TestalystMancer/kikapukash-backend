@@ -17,12 +17,9 @@ class SavingsGroup(TimeStampModel):
         pass
 
 class SavingsGroupMember(TimeStampModel):
-    SavingsGroup = models.ForeignKey(SavingsGroup, on_delete=models.CASCADE, related_name='members')
+    savings_group = models.ForeignKey(SavingsGroup, on_delete=models.CASCADE, related_name='members')  # lowercase s
     user = models.ForeignKey('users.CustomUser', on_delete=models.CASCADE, related_name='group_memberships')
     is_admin = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.User} - {self.SavingsGroup.group_name} ({'Admin' if self.is_admin else 'Member'})"
-
-
-
+        return f"{self.user} - {self.savings_group.group_name} ({'Admin' if self.is_admin else 'Member'})"
