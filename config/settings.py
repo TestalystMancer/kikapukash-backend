@@ -29,7 +29,9 @@ SECRET_KEY = 'django-insecure-77!jmxxdxf+=0q7nl+m)+haag@2@p3p71eob#@q5ln7h7&wayd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["kikapukash-backend-production.up.railway.app"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "kikapukash-backend-production.up.railway.app"]
+
+
 
 
 # Application definition
